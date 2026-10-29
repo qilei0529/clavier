@@ -26,7 +26,6 @@ final class KeycastOverlayController {
         guard let panel else { return }
         if appState.isOverlayVisible {
             panel.orderFrontRegardless()
-            WindowBackgroundBlur.apply(to: panel, radius: 4)
         } else {
             panel.orderOut(nil)
         }
@@ -34,7 +33,7 @@ final class KeycastOverlayController {
 
     private func setupPanel() {
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 180, height: 84),
+            contentRect: NSRect(x: 0, y: 0, width: 212, height: 116),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -43,8 +42,7 @@ final class KeycastOverlayController {
         panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isOpaque = false
-        // Clear window chrome; SwiftUI owns fill + continuous corner radius.
-        // CGS blur (4pt) still composites through translucent content.
+        // Clear window chrome; SwiftUI draws the solid HUD fill.
         panel.backgroundColor = .clear
         panel.hasShadow = false
         panel.hidesOnDeactivate = false
@@ -57,10 +55,13 @@ final class KeycastOverlayController {
             .environment(appState)
         let hostingView = DraggableHostingView(rootView: rootView)
         hostingView.sizingOptions = [.intrinsicContentSize]
+        hostingView.clipsToBounds = false
         panel.contentView = hostingView
+        panel.contentView?.clipsToBounds = false
+        panel.contentView?.wantsLayer = true
+        panel.contentView?.layer?.masksToBounds = false
 
         panel.setFrameOrigin(restoredOrigin(for: panel) ?? defaultOrigin(for: panel))
-        WindowBackgroundBlur.apply(to: panel, radius: 4)
         self.panel = panel
 
         moveObserver = NotificationCenter.default.addObserver(

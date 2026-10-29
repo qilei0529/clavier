@@ -4,38 +4,18 @@
 //
 
 import AppKit
-import Darwin
+import SwiftUI
 
-enum WindowBackgroundBlur {
-    private static let setRadius: (@convention(c) (Int32, Int32, Int) -> Int32)? = {
-        let libraries = [
-            "/System/Library/PrivateFrameworks/SkyLight.framework/SkyLight",
-            "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
-        ]
-        for path in libraries {
-            guard let handle = dlopen(path, RTLD_LAZY) else { continue }
-            guard let symbol = dlsym(handle, "CGSSetWindowBackgroundBlurRadius") else { continue }
-            return unsafeBitCast(symbol, to: (@convention(c) (Int32, Int32, Int) -> Int32).self)
-        }
-        return nil
-    }()
-
-    private static let defaultConnection: (@convention(c) () -> Int32)? = {
-        let libraries = [
-            "/System/Library/PrivateFrameworks/SkyLight.framework/SkyLight",
-            "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
-        ]
-        for path in libraries {
-            guard let handle = dlopen(path, RTLD_LAZY) else { continue }
-            guard let symbol = dlsym(handle, "CGSDefaultConnectionForThread") else { continue }
-            return unsafeBitCast(symbol, to: (@convention(c) () -> Int32).self)
-        }
-        return nil
-    }()
-
-    static func apply(to window: NSWindow, radius: Int) {
-        window.isOpaque = false
-        guard let setRadius, let defaultConnection else { return }
-        _ = setRadius(defaultConnection(), Int32(window.windowNumber), radius)
+/// Backdrop blur clipped to the HUD shape only (not the outer shadow padding).
+struct ScopedBackdropBlur: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSVisualEffectView {
+        let view = NSVisualEffectView()
+        view.material = .hudWindow
+        view.blendingMode = .behindWindow
+        view.state = .active
+        view.isEmphasized = true
+        return view
     }
+
+    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {}
 }

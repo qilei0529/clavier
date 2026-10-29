@@ -13,7 +13,9 @@ struct KeycastOverlayView: View {
     private let topHeight: CGFloat = 52
     private let barHeight: CGFloat = 32
     private let cornerRadius: CGFloat = 14
-    private let line = Color.white.opacity(0.28)
+    private let gap: CGFloat = 1
+    private let panelFill = Color.black.opacity(0.8)
+    private let gapFill = Color.black.opacity(0.4)
     private let inactive = Color(white: 0.55)
     private let active = Color.white
 
@@ -26,19 +28,28 @@ struct KeycastOverlayView: View {
             keyDisplay
                 .frame(maxWidth: .infinity)
                 .frame(height: topHeight)
+                .background(
+                    panelFill,
+                    in: UnevenRoundedRectangle(
+                        topLeadingRadius: cornerRadius,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: cornerRadius,
+                        style: .continuous
+                    )
+                )
 
-            Rectangle()
-                .fill(line)
-                .frame(height: 1)
+            gapFill
+                .frame(height: gap)
 
             modifierBar
                 .frame(height: barHeight)
         }
         .frame(width: hudWidth)
-        .background(hudShape.fill(Color.black.opacity(0.89)))
-        .clipShape(hudShape)
         .contentShape(hudShape)
-        .shadow(color: .black.opacity(0.35), radius: 10, y: 4)
+        .shadow(color: .black.opacity(0.25), radius: 6, y: 2)
+        // Transparent inset so the panel frame includes the shadow (no blur in this region).
+        .padding(10)
         .gesture(WindowDragGesture())
         .animation(nil, value: appState.recentKeys)
         .animation(nil, value: appState.activeModifiers.rawValue)
@@ -66,29 +77,60 @@ struct KeycastOverlayView: View {
 
     private var modifierBar: some View {
         HStack(spacing: 0) {
-            modifierCell("⇧", isOn: appState.activeModifiers.contains(.shift))
-            barDivider
-            modifierCell("⌃", isOn: appState.activeModifiers.contains(.control))
-            barDivider
-            modifierCell("⌥", isOn: appState.activeModifiers.contains(.option))
-            barDivider
-            modifierCell("⌘", isOn: appState.activeModifiers.contains(.command))
+            modifierCell(
+                "⇧",
+                isOn: appState.activeModifiers.contains(.shift),
+                bottomLeading: cornerRadius,
+                bottomTrailing: 0
+            )
+            gapFill
+                .frame(width: gap)
+            modifierCell(
+                "⌃",
+                isOn: appState.activeModifiers.contains(.control),
+                bottomLeading: 0,
+                bottomTrailing: 0
+            )
+            gapFill
+                .frame(width: gap)
+            modifierCell(
+                "⌥",
+                isOn: appState.activeModifiers.contains(.option),
+                bottomLeading: 0,
+                bottomTrailing: 0
+            )
+            gapFill
+                .frame(width: gap)
+            modifierCell(
+                "⌘",
+                isOn: appState.activeModifiers.contains(.command),
+                bottomLeading: 0,
+                bottomTrailing: cornerRadius
+            )
         }
     }
 
-    private var barDivider: some View {
-        Rectangle()
-            .fill(line)
-            .frame(width: 1)
-            .frame(maxHeight: .infinity)
-    }
-
-    private func modifierCell(_ symbol: String, isOn: Bool) -> some View {
+    private func modifierCell(
+        _ symbol: String,
+        isOn: Bool,
+        bottomLeading: CGFloat,
+        bottomTrailing: CGFloat
+    ) -> some View {
         Text(symbol)
             .font(.system(size: 15, weight: .light, design: .default))
             .foregroundStyle(isOn ? active : inactive)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .shadow(color: isOn ? .white.opacity(0.35) : .clear, radius: 4)
+            .background(
+                panelFill,
+                in: UnevenRoundedRectangle(
+                    topLeadingRadius: 0,
+                    bottomLeadingRadius: bottomLeading,
+                    bottomTrailingRadius: bottomTrailing,
+                    topTrailingRadius: 0,
+                    style: .continuous
+                )
+            )
     }
 }
 
