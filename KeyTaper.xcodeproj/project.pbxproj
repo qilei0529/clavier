@@ -1,0 +1,549 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		BFEE9D13309369C600013BD0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFEE9CFD309369C500013BD0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BFEE9D04309369C500013BD0;
+			remoteInfo = KeyTaper;
+		};
+		BFEE9D1D309369C600013BD0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFEE9CFD309369C500013BD0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BFEE9D04309369C500013BD0;
+			remoteInfo = KeyTaper;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		BFEE9D05309369C500013BD0 /* KeyTaper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyTaper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BFEE9D12309369C600013BD0 /* KeyTaperTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyTaperTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BFEE9D1C309369C600013BD0 /* KeyTaperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyTaperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		BFEE9D07309369C500013BD0 /* KeyTaper */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KeyTaper;
+			sourceTree = "<group>";
+		};
+		BFEE9D15309369C600013BD0 /* KeyTaperTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KeyTaperTests;
+			sourceTree = "<group>";
+		};
+		BFEE9D1F309369C600013BD0 /* KeyTaperUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KeyTaperUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BFEE9D02309369C500013BD0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		BFEE9D0F309369C600013BD0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		BFEE9D19309369C600013BD0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BFEE9CFC309369C500013BD0 = {
+			isa = PBXGroup;
+			children = (
+				BFEE9D07309369C500013BD0 /* KeyTaper */,
+				BFEE9D15309369C600013BD0 /* KeyTaperTests */,
+				BFEE9D1F309369C600013BD0 /* KeyTaperUITests */,
+				BFEE9D06309369C500013BD0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BFEE9D06309369C500013BD0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BFEE9D05309369C500013BD0 /* KeyTaper.app */,
+				BFEE9D12309369C600013BD0 /* KeyTaperTests.xctest */,
+				BFEE9D1C309369C600013BD0 /* KeyTaperUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BFEE9D04309369C500013BD0 /* KeyTaper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BFEE9D24309369C600013BD0 /* Build configuration list for PBXNativeTarget "KeyTaper" */;
+			buildPhases = (
+				BFEE9D01309369C500013BD0 /* Sources */,
+				BFEE9D02309369C500013BD0 /* Frameworks */,
+				BFEE9D03309369C500013BD0 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				BFEE9D07309369C500013BD0 /* KeyTaper */,
+			);
+			name = KeyTaper;
+			productName = KeyTaper;
+			productReference = BFEE9D05309369C500013BD0 /* KeyTaper.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BFEE9D11309369C600013BD0 /* KeyTaperTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BFEE9D27309369C600013BD0 /* Build configuration list for PBXNativeTarget "KeyTaperTests" */;
+			buildPhases = (
+				BFEE9D0E309369C600013BD0 /* Sources */,
+				BFEE9D0F309369C600013BD0 /* Frameworks */,
+				BFEE9D10309369C600013BD0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BFEE9D14309369C600013BD0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BFEE9D15309369C600013BD0 /* KeyTaperTests */,
+			);
+			name = KeyTaperTests;
+			productName = KeyTaperTests;
+			productReference = BFEE9D12309369C600013BD0 /* KeyTaperTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		BFEE9D1B309369C600013BD0 /* KeyTaperUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BFEE9D2A309369C600013BD0 /* Build configuration list for PBXNativeTarget "KeyTaperUITests" */;
+			buildPhases = (
+				BFEE9D18309369C600013BD0 /* Sources */,
+				BFEE9D19309369C600013BD0 /* Frameworks */,
+				BFEE9D1A309369C600013BD0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BFEE9D1E309369C600013BD0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BFEE9D1F309369C600013BD0 /* KeyTaperUITests */,
+			);
+			name = KeyTaperUITests;
+			productName = KeyTaperUITests;
+			productReference = BFEE9D1C309369C600013BD0 /* KeyTaperUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BFEE9CFD309369C500013BD0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					BFEE9D04309369C500013BD0 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					BFEE9D11309369C600013BD0 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = BFEE9D04309369C500013BD0;
+					};
+					BFEE9D1B309369C600013BD0 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = BFEE9D04309369C500013BD0;
+					};
+				};
+			};
+			buildConfigurationList = BFEE9D00309369C500013BD0 /* Build configuration list for PBXProject "KeyTaper" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BFEE9CFC309369C500013BD0;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = BFEE9D06309369C500013BD0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BFEE9D04309369C500013BD0 /* KeyTaper */,
+				BFEE9D11309369C600013BD0 /* KeyTaperTests */,
+				BFEE9D1B309369C600013BD0 /* KeyTaperUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BFEE9D03309369C500013BD0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		BFEE9D10309369C600013BD0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		BFEE9D1A309369C600013BD0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BFEE9D01309369C500013BD0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		BFEE9D0E309369C600013BD0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		BFEE9D18309369C600013BD0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BFEE9D14309369C600013BD0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BFEE9D04309369C500013BD0 /* KeyTaper */;
+			targetProxy = BFEE9D13309369C600013BD0 /* PBXContainerItemProxy */;
+		};
+		BFEE9D1E309369C600013BD0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BFEE9D04309369C500013BD0 /* KeyTaper */;
+			targetProxy = BFEE9D1D309369C600013BD0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		BFEE9D22309369C600013BD0 /* Debug configuration for PBXProject "KeyTaper" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = VRA693K4UM;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BFEE9D23309369C600013BD0 /* Release configuration for PBXProject "KeyTaper" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = VRA693K4UM;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		BFEE9D25309369C600013BD0 /* Debug configuration for PBXNativeTarget "KeyTaper" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRA693K4UM;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mac.KeyTaper;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		BFEE9D26309369C600013BD0 /* Release configuration for PBXNativeTarget "KeyTaper" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRA693K4UM;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mac.KeyTaper;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		BFEE9D28309369C600013BD0 /* Debug configuration for PBXNativeTarget "KeyTaperTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRA693K4UM;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mac.KeyTaperTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KeyTaper.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KeyTaper";
+			};
+			name = Debug;
+		};
+		BFEE9D29309369C600013BD0 /* Release configuration for PBXNativeTarget "KeyTaperTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRA693K4UM;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mac.KeyTaperTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KeyTaper.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KeyTaper";
+			};
+			name = Release;
+		};
+		BFEE9D2B309369C600013BD0 /* Debug configuration for PBXNativeTarget "KeyTaperUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRA693K4UM;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mac.KeyTaperUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = KeyTaper;
+			};
+			name = Debug;
+		};
+		BFEE9D2C309369C600013BD0 /* Release configuration for PBXNativeTarget "KeyTaperUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRA693K4UM;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mac.KeyTaperUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = KeyTaper;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BFEE9D00309369C500013BD0 /* Build configuration list for PBXProject "KeyTaper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFEE9D22309369C600013BD0 /* Debug configuration for PBXProject "KeyTaper" */,
+				BFEE9D23309369C600013BD0 /* Release configuration for PBXProject "KeyTaper" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		BFEE9D24309369C600013BD0 /* Build configuration list for PBXNativeTarget "KeyTaper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFEE9D25309369C600013BD0 /* Debug configuration for PBXNativeTarget "KeyTaper" */,
+				BFEE9D26309369C600013BD0 /* Release configuration for PBXNativeTarget "KeyTaper" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		BFEE9D27309369C600013BD0 /* Build configuration list for PBXNativeTarget "KeyTaperTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFEE9D28309369C600013BD0 /* Debug configuration for PBXNativeTarget "KeyTaperTests" */,
+				BFEE9D29309369C600013BD0 /* Release configuration for PBXNativeTarget "KeyTaperTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		BFEE9D2A309369C600013BD0 /* Build configuration list for PBXNativeTarget "KeyTaperUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFEE9D2B309369C600013BD0 /* Debug configuration for PBXNativeTarget "KeyTaperUITests" */,
+				BFEE9D2C309369C600013BD0 /* Release configuration for PBXNativeTarget "KeyTaperUITests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BFEE9CFD309369C500013BD0 /* Project object */;
+	validationLevel = 1;
+}
