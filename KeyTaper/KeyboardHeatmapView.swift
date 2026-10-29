@@ -7,6 +7,8 @@ import SwiftUI
 
 struct KeyboardHeatmapView: View {
     let counts: [UInt16: Int]
+    var leftClicks: Int = 0
+    var rightClicks: Int = 0
 
     @State private var hoveredKeyID: String?
 
@@ -17,59 +19,21 @@ struct KeyboardHeatmapView: View {
     private let rowCount = 6
 
     private var maxCount: Int {
-        counts.values.max() ?? 0
+        max(counts.values.max() ?? 0, leftClicks, rightClicks)
     }
 
     private var keyboardHeight: CGFloat {
         CGFloat(rowCount) * unitSize + CGFloat(rowCount - 1) * gap
     }
 
-    private var hoveredKey: HeatmapKey? {
-        guard let hoveredKeyID else { return nil }
-        return Self.allKeys.first { $0.id == hoveredKeyID }
-    }
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            tooltipBar
-
-            HStack(alignment: .bottom, spacing: gap * 3) {
-                mainKeyboard
-                arrowCluster
-            }
-            .frame(height: keyboardHeight)
+        HStack(alignment: .bottom, spacing: gap * 3) {
+            mainKeyboard
+            arrowCluster
         }
-    }
-
-    private var tooltipBar: some View {
-        Group {
-            if let key = hoveredKey {
-                let count = key.keyCode.flatMap { counts[$0] } ?? 0
-                HStack(spacing: 6) {
-                    Text(displayName(for: key))
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    Text(formattedCount(count))
-                        .font(.system(size: 11, weight: .medium, design: .rounded).monospacedDigit())
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(.background.opacity(0.95), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.12), radius: 3, y: 1)
-            } else {
-                Text(" ")
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .hidden()
-            }
-        }
-        .frame(height: 22, alignment: .leading)
-        .animation(.easeOut(duration: 0.12), value: hoveredKeyID)
+        .frame(height: keyboardHeight)
+        // Room for tooltips sitting 20pt above top-row keys.
+        .padding(.top, 36)
     }
 
     private var mainKeyboard: some View {
@@ -95,9 +59,19 @@ struct KeyboardHeatmapView: View {
         }
     }
 
-    /// Inverted-T arrows on the right (↑ / ← ↓ →).
+    /// Mouse L/R centered above inverted-T arrows (↑ / ← ↓ →).
     private var arrowCluster: some View {
-        VStack(spacing: gap) {
+        let clusterWidth = unitSize * 3 + gap * 2
+        return VStack(spacing: gap) {
+            HStack(spacing: gap) {
+                mouseCap(id: "mouse-L", name: "mouse L", count: leftClicks)
+                mouseCap(id: "mouse-R", name: "mouse R", count: rightClicks)
+            }
+            .frame(width: clusterWidth, alignment: .center)
+
+            // One empty row between mouse buttons and arrows.
+            Color.clear.frame(width: clusterWidth, height: unitSize)
+
             HStack(spacing: gap) {
                 Color.clear.frame(width: unitSize, height: unitSize)
                 keyCap(.init(126, "↑", 1))
@@ -115,9 +89,18 @@ struct KeyboardHeatmapView: View {
         }
     }
 
+    private func mouseCap(id: String, name: String, count: Int) -> some View {
+        heatCap(id: id, name: name, count: count)
+            .frame(width: unitSize, height: unitSize)
+    }
+
     private func keyCap(_ key: HeatmapKey) -> some View {
         let count = key.keyCode.flatMap { counts[$0] } ?? 0
-        let isHovered = hoveredKeyID == key.id
+        return heatCap(id: key.id, name: displayName(for: key), count: count)
+    }
+
+    private func heatCap(id: String, name: String, count: Int) -> some View {
+        let isHovered = hoveredKeyID == id
         return RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             .fill(Self.fillColor(count: count, maxCount: maxCount))
             .overlay {
@@ -126,13 +109,43 @@ struct KeyboardHeatmapView: View {
                         .strokeBorder(Color.primary.opacity(0.35), lineWidth: 1)
                 }
             }
+            .overlay(alignment: .top) {
+                if isHovered {
+                    tooltipBubble(name: name, count: count)
+                        .fixedSize()
+                        // Sit 20pt above this rect (bubble bottom → rect top + 20pt).
+                        .alignmentGuide(.top) { dimensions in
+                            dimensions[.bottom] + 20
+                        }
+                }
+            }
+            .zIndex(isHovered ? 1000 : 0)
             .onHover { hovering in
                 if hovering {
-                    hoveredKeyID = key.id
-                } else if hoveredKeyID == key.id {
+                    hoveredKeyID = id
+                } else if hoveredKeyID == id {
                     hoveredKeyID = nil
                 }
             }
+    }
+
+    private func tooltipBubble(name: String, count: Int) -> some View {
+        HStack(spacing: 6) {
+            Text(name)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+            Text(formattedCount(count))
+                .font(.system(size: 11, weight: .medium, design: .rounded).monospacedDigit())
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(.background.opacity(0.95), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.12), radius: 3, y: 1)
+        .allowsHitTesting(false)
     }
 
     private func displayName(for key: HeatmapKey) -> String {
@@ -239,8 +252,12 @@ private struct HeatmapRow {
 }
 
 #Preview {
-    KeyboardHeatmapView(counts: [
-        0: 120, 1: 80, 2: 40, 12: 200, 13: 150, 49: 300, 36: 90,
-    ])
+    KeyboardHeatmapView(
+        counts: [
+            0: 120, 1: 80, 2: 40, 12: 200, 13: 150, 49: 300, 36: 90,
+        ],
+        leftClicks: 220,
+        rightClicks: 40
+    )
     .padding()
 }

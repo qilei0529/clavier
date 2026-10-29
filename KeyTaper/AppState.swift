@@ -15,6 +15,8 @@ final class AppState {
     private static let recentKeysIdleClear: Duration = .seconds(5)
 
     private(set) var todayCount: Int = 0
+    private(set) var todayLeftClicks: Int = 0
+    private(set) var todayRightClicks: Int = 0
     private(set) var history: [DayCount] = []
     private(set) var hasAccessibilityPermission: Bool = false
     private(set) var recentKeys: [RecentKey] = []
@@ -91,6 +93,17 @@ final class AppState {
         return HourlyCounts.normalized(day.hourlyCounts)
     }
 
+    /// Left / right mouse clicks for a calendar day. Today uses the live counters.
+    func mouseClicks(on date: String) -> (left: Int, right: Int) {
+        if date == stats.todayDate {
+            return (todayLeftClicks, todayRightClicks)
+        }
+        guard let day = stats.days.first(where: { $0.date == date }) else {
+            return (0, 0)
+        }
+        return (day.leftClicks, day.rightClicks)
+    }
+
     private static func mapKeyCounts(_ raw: [String: Int]) -> [UInt16: Int] {
         var result: [UInt16: Int] = [:]
         result.reserveCapacity(raw.count)
@@ -158,6 +171,11 @@ final class AppState {
             return
         }
 
+        if event.type == .leftMouseDown || event.type == .rightMouseDown {
+            recordMouseClick(isRight: event.type == .rightMouseDown)
+            return
+        }
+
         guard event.type == .keyDown else { return }
 
         applyDayBoundaryIfNeeded(persist: true)
@@ -185,6 +203,23 @@ final class AppState {
             // Mask password / secure-field input in the overlay only; counts still use keyCode.
             appendRecentKey(SecureInputDetector.isActive ? "*" : label)
         }
+    }
+
+    /// Mouse clicks are stored separately from the menu-bar keystroke total.
+    private func recordMouseClick(isRight: Bool) {
+        applyDayBoundaryIfNeeded(persist: true)
+        guard hasAccessibilityPermission else { return }
+
+        if isRight {
+            todayRightClicks += 1
+            stats.todayRightClicks = todayRightClicks
+            stats.rightClicks += 1
+        } else {
+            todayLeftClicks += 1
+            stats.todayLeftClicks = todayLeftClicks
+            stats.leftClicks += 1
+        }
+        schedulePersist()
     }
 
     /// Heatmap / per-day key maps only — does not inflate the menu-bar day total.
@@ -219,12 +254,18 @@ final class AppState {
         let today = DayKey.string()
         guard stats.todayDate != today else { return }
 
-        if stats.todayCount > 0 {
+        let hasDayActivity = stats.todayCount > 0
+            || stats.todayLeftClicks > 0
+            || stats.todayRightClicks > 0
+            || !stats.todayKeyCounts.isEmpty
+        if hasDayActivity {
             upsertHistory(
                 date: stats.todayDate,
                 count: stats.todayCount,
                 keyCounts: stats.todayKeyCounts,
-                hourlyCounts: stats.todayHourlyCounts
+                hourlyCounts: stats.todayHourlyCounts,
+                leftClicks: stats.todayLeftClicks,
+                rightClicks: stats.todayRightClicks
             )
         }
 
@@ -232,7 +273,11 @@ final class AppState {
         stats.todayCount = 0
         stats.todayKeyCounts = [:]
         stats.todayHourlyCounts = HourlyCounts.empty
+        stats.todayLeftClicks = 0
+        stats.todayRightClicks = 0
         todayCount = 0
+        todayLeftClicks = 0
+        todayRightClicks = 0
         history = sortedHistory(stats.days)
 
         if persist {
@@ -244,7 +289,9 @@ final class AppState {
         date: String,
         count: Int,
         keyCounts: [String: Int],
-        hourlyCounts: [Int]
+        hourlyCounts: [Int],
+        leftClicks: Int,
+        rightClicks: Int
     ) {
         guard !date.isEmpty else { return }
 
@@ -253,13 +300,17 @@ final class AppState {
             stats.days[index].count = count
             stats.days[index].keyCounts = keyCounts
             stats.days[index].hourlyCounts = normalizedHourly
+            stats.days[index].leftClicks = leftClicks
+            stats.days[index].rightClicks = rightClicks
         } else {
             stats.days.append(
                 DayCount(
                     date: date,
                     count: count,
                     keyCounts: keyCounts,
-                    hourlyCounts: normalizedHourly
+                    hourlyCounts: normalizedHourly,
+                    leftClicks: leftClicks,
+                    rightClicks: rightClicks
                 )
             )
         }
@@ -273,6 +324,8 @@ final class AppState {
 
     private func syncFromStats() {
         todayCount = stats.todayCount
+        todayLeftClicks = stats.todayLeftClicks
+        todayRightClicks = stats.todayRightClicks
         history = sortedHistory(stats.days)
     }
 
@@ -289,6 +342,8 @@ final class AppState {
         persistTask?.cancel()
         persistTask = nil
         stats.todayCount = todayCount
+        stats.todayLeftClicks = todayLeftClicks
+        stats.todayRightClicks = todayRightClicks
         stats.todayDate = DayKey.string()
         stats.days = sortedHistory(stats.days)
         store.save(stats)

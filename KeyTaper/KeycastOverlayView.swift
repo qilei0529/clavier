@@ -65,14 +65,14 @@ struct KeycastOverlayView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     // Reserve letter-size line metrics so the row height never jumps.
                     Text("A")
-                        .font(.system(size: letterKeySize, weight: .medium, design: .default))
+                        .font(overlayFont(size: letterKeySize, weight: .regular))
                         .hidden()
                         .frame(width: 0)
                         .accessibilityHidden(true)
 
                     ForEach(appState.recentKeys) { key in
                         Text(key.label)
-                            .font(.system(size: keyFontSize(for: key.label), weight: .medium, design: .default))
+                            .font(overlayFont(size: keyFontSize(for: key.label), weight: .regular))
                             .foregroundStyle(active)
                             .lineLimit(1)
                             .minimumScaleFactor(0.5)
@@ -90,6 +90,11 @@ struct KeycastOverlayView: View {
             return symbolKeySize
         }
         return letterKeySize
+    }
+
+    /// Same face as KeyCastr: macOS system font (SF Pro via `NSFont.systemFont`).
+    private func overlayFont(size: CGFloat, weight: Font.Weight) -> Font {
+        OverlayFont.system.font(size: size, weight: weight)
     }
 
     private var modifierBar: some View {
@@ -134,7 +139,8 @@ struct KeycastOverlayView: View {
         bottomTrailing: CGFloat
     ) -> some View {
         Text(symbol)
-            .font(.system(size: 15, weight: .light, design: .default))
+            // Match KeyCastr Svelte: boldSystemFont for modifier glyphs.
+            .font(overlayFont(size: 15, weight: .bold))
             .foregroundStyle(isOn ? active : inactive)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .shadow(color: isOn ? .white.opacity(0.35) : .clear, radius: 4)

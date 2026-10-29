@@ -6,7 +6,7 @@
 import AppKit
 import Foundation
 
-/// Observes global keyDown and flagsChanged. Callers decide how to count / display.
+/// Observes global key and mouse-down events. Callers decide how to count / display.
 final class KeystrokeMonitor: @unchecked Sendable {
     private var monitor: Any?
     private let onEvent: @Sendable (NSEvent) -> Void
@@ -24,7 +24,9 @@ final class KeystrokeMonitor: @unchecked Sendable {
         guard monitor == nil else { return true }
         guard AccessibilityPermission.isGranted else { return false }
 
-        monitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { [onEvent] event in
+        monitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.keyDown, .flagsChanged, .leftMouseDown, .rightMouseDown]
+        ) { [onEvent] event in
             onEvent(event)
         }
 

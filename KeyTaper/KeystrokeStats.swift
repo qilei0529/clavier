@@ -25,6 +25,8 @@ struct DayCount: Identifiable, Equatable, Hashable {
     var keyCounts: [String: Int]
     /// Keystroke totals per hour (index 0–23, local calendar).
     var hourlyCounts: [Int]
+    var leftClicks: Int
+    var rightClicks: Int
 
     var id: String { date }
 
@@ -32,12 +34,16 @@ struct DayCount: Identifiable, Equatable, Hashable {
         date: String,
         count: Int,
         keyCounts: [String: Int] = [:],
-        hourlyCounts: [Int] = HourlyCounts.empty
+        hourlyCounts: [Int] = HourlyCounts.empty,
+        leftClicks: Int = 0,
+        rightClicks: Int = 0
     ) {
         self.date = date
         self.count = count
         self.keyCounts = keyCounts
         self.hourlyCounts = HourlyCounts.normalized(hourlyCounts)
+        self.leftClicks = leftClicks
+        self.rightClicks = rightClicks
     }
 }
 
@@ -47,6 +53,8 @@ extension DayCount: Codable {
         case count
         case keyCounts
         case hourlyCounts
+        case leftClicks
+        case rightClicks
     }
 
     init(from decoder: Decoder) throws {
@@ -57,6 +65,8 @@ extension DayCount: Codable {
         hourlyCounts = HourlyCounts.normalized(
             try container.decodeIfPresent([Int].self, forKey: .hourlyCounts)
         )
+        leftClicks = try container.decodeIfPresent(Int.self, forKey: .leftClicks) ?? 0
+        rightClicks = try container.decodeIfPresent(Int.self, forKey: .rightClicks) ?? 0
     }
 
     func encode(to encoder: Encoder) throws {
@@ -65,6 +75,8 @@ extension DayCount: Codable {
         try container.encode(count, forKey: .count)
         try container.encode(keyCounts, forKey: .keyCounts)
         try container.encode(HourlyCounts.normalized(hourlyCounts), forKey: .hourlyCounts)
+        try container.encode(leftClicks, forKey: .leftClicks)
+        try container.encode(rightClicks, forKey: .rightClicks)
     }
 }
 
@@ -75,17 +87,25 @@ struct KeystrokeStats: Equatable {
     var todayKeyCounts: [String: Int]
     /// Today's per-hour tallies (parallel to `todayCount`).
     var todayHourlyCounts: [Int]
+    var todayLeftClicks: Int
+    var todayRightClicks: Int
     var days: [DayCount]
     /// Physical keyCode → lifetime press count. Keys stored as decimal strings for JSON.
     var keyCounts: [String: Int]
+    var leftClicks: Int
+    var rightClicks: Int
 
     static let empty = KeystrokeStats(
         todayDate: DayKey.string(),
         todayCount: 0,
         todayKeyCounts: [:],
         todayHourlyCounts: HourlyCounts.empty,
+        todayLeftClicks: 0,
+        todayRightClicks: 0,
         days: [],
-        keyCounts: [:]
+        keyCounts: [:],
+        leftClicks: 0,
+        rightClicks: 0
     )
 }
 
@@ -95,8 +115,12 @@ extension KeystrokeStats: Codable {
         case todayCount
         case todayKeyCounts
         case todayHourlyCounts
+        case todayLeftClicks
+        case todayRightClicks
         case days
         case keyCounts
+        case leftClicks
+        case rightClicks
     }
 
     init(from decoder: Decoder) throws {
@@ -107,8 +131,12 @@ extension KeystrokeStats: Codable {
         todayHourlyCounts = HourlyCounts.normalized(
             try container.decodeIfPresent([Int].self, forKey: .todayHourlyCounts)
         )
+        todayLeftClicks = try container.decodeIfPresent(Int.self, forKey: .todayLeftClicks) ?? 0
+        todayRightClicks = try container.decodeIfPresent(Int.self, forKey: .todayRightClicks) ?? 0
         days = try container.decode([DayCount].self, forKey: .days)
         keyCounts = try container.decodeIfPresent([String: Int].self, forKey: .keyCounts) ?? [:]
+        leftClicks = try container.decodeIfPresent(Int.self, forKey: .leftClicks) ?? 0
+        rightClicks = try container.decodeIfPresent(Int.self, forKey: .rightClicks) ?? 0
     }
 
     func encode(to encoder: Encoder) throws {
@@ -117,7 +145,11 @@ extension KeystrokeStats: Codable {
         try container.encode(todayCount, forKey: .todayCount)
         try container.encode(todayKeyCounts, forKey: .todayKeyCounts)
         try container.encode(HourlyCounts.normalized(todayHourlyCounts), forKey: .todayHourlyCounts)
+        try container.encode(todayLeftClicks, forKey: .todayLeftClicks)
+        try container.encode(todayRightClicks, forKey: .todayRightClicks)
         try container.encode(days, forKey: .days)
         try container.encode(keyCounts, forKey: .keyCounts)
+        try container.encode(leftClicks, forKey: .leftClicks)
+        try container.encode(rightClicks, forKey: .rightClicks)
     }
 }

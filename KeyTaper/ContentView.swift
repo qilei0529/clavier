@@ -38,6 +38,7 @@ struct ContentView: View {
 
             dayHourlySummary
             dayKeySummary
+            dayMouseSummary
 
             Divider()
 
@@ -192,12 +193,19 @@ struct ContentView: View {
     private var dayKeySummary: some View {
         if let selectedDate {
             let counts = appState.keyCounts(on: selectedDate)
+            let clicks = appState.mouseClicks(on: selectedDate)
             VStack(alignment: .leading, spacing: 8) {
                 Text(selectedDate == appState.todayDate ? "Keys today" : "Keys on \(displayDate(selectedDate))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                KeyboardHeatmapView(counts: counts)
+                KeyboardHeatmapView(
+                    counts: counts,
+                    leftClicks: clicks.left,
+                    rightClicks: clicks.right
+                )
+                .animation(nil, value: appState.todayLeftClicks)
+                .animation(nil, value: appState.todayRightClicks)
 
                 if counts.isEmpty {
                     Text("No per-key data for this day yet")
@@ -205,6 +213,28 @@ struct ContentView: View {
                         .foregroundStyle(.tertiary)
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var dayMouseSummary: some View {
+        if let selectedDate {
+            let clicks = appState.mouseClicks(on: selectedDate)
+            HStack(spacing: 12) {
+                Text("Mouse")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("L \(formattedCount(clicks.left))")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                Text("R \(formattedCount(clicks.right))")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            // Ensure live today clicks invalidate this view.
+            .animation(nil, value: appState.todayLeftClicks)
+            .animation(nil, value: appState.todayRightClicks)
         }
     }
 
