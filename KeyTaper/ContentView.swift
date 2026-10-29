@@ -24,6 +24,8 @@ struct ContentView: View {
     }()
 
     var body: some View {
+        @Bindable var appState = appState
+
         VStack(alignment: .leading, spacing: 16) {
             header
 
@@ -32,6 +34,16 @@ struct ContentView: View {
             }
 
             historySection
+
+            Divider()
+
+            Toggle("Show key overlay", isOn: $appState.isOverlayVisible)
+                .controlSize(.small)
+
+            Text("Overlay shows recent keys in memory only. Daily counts never store which keys you pressed.")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
 
             Divider()
 
@@ -61,7 +73,7 @@ struct ContentView: View {
 
     private var permissionBanner: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Accessibility access is required to count keystrokes. KeyTaper only counts taps and never records which keys you press.")
+            Text("Accessibility access is required to count keystrokes and show the key overlay.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

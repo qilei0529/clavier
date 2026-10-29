@@ -6,13 +6,13 @@
 import AppKit
 import Foundation
 
-/// Counts global keyDown events only. Never inspects or stores key codes / characters.
+/// Observes global keyDown and flagsChanged. Callers decide how to count / display.
 final class KeystrokeMonitor: @unchecked Sendable {
     private var monitor: Any?
-    private let onKeyDown: @Sendable () -> Void
+    private let onEvent: @Sendable (NSEvent) -> Void
 
-    init(onKeyDown: @escaping @Sendable () -> Void) {
-        self.onKeyDown = onKeyDown
+    init(onEvent: @escaping @Sendable (NSEvent) -> Void) {
+        self.onEvent = onEvent
     }
 
     var isRunning: Bool {
@@ -24,8 +24,8 @@ final class KeystrokeMonitor: @unchecked Sendable {
         guard monitor == nil else { return true }
         guard AccessibilityPermission.isGranted else { return false }
 
-        monitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [onKeyDown] _ in
-            onKeyDown()
+        monitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { [onEvent] event in
+            onEvent(event)
         }
 
         return monitor != nil

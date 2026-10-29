@@ -10,14 +10,26 @@ import Observation
 @Observable
 @MainActor
 final class AppState {
+    private static let overlayVisibleKey = "isOverlayVisible"
+    private static let maxRecentKeys = 6
+    private static let recentKeysIdleClear: Duration = .seconds(5)
+
     private(set) var todayCount: Int = 0
     private(set) var history: [DayCount] = []
     private(set) var hasAccessibilityPermission: Bool = false
+    private(set) var recentKeys: [RecentKey] = []
+    private(set) var activeModifiers: NSEvent.ModifierFlags = []
+    var isOverlayVisible: Bool {
+        didSet {
+            UserDefaults.standard.set(isOverlayVisible, forKey: Self.overlayVisibleKey)
+        }
+    }
 
     private let store: StatsStore
     private var stats: KeystrokeStats
     private var monitor: KeystrokeMonitor?
     private var persistTask: Task<Void, Never>?
+    private var recentKeysClearTask: Task<Void, Never>?
     nonisolated(unsafe) private var dayChangeObserver: NSObjectProtocol?
     nonisolated(unsafe) private var becomeActiveObserver: NSObjectProtocol?
 
@@ -36,9 +48,25 @@ final class AppState {
         Array(history.prefix(14))
     }
 
+    /// Lifetime per-key tallies for a future heatmap UI. Keys are physical keyCodes.
+    var keyCounts: [UInt16: Int] {
+        var result: [UInt16: Int] = [:]
+        result.reserveCapacity(stats.keyCounts.count)
+        for (key, count) in stats.keyCounts {
+            guard let code = UInt16(key) else { continue }
+            result[code] = count
+        }
+        return result
+    }
+
     init(store: StatsStore = StatsStore()) {
         self.store = store
         self.stats = store.load()
+        if UserDefaults.standard.object(forKey: Self.overlayVisibleKey) == nil {
+            self.isOverlayVisible = true
+        } else {
+            self.isOverlayVisible = UserDefaults.standard.bool(forKey: Self.overlayVisibleKey)
+        }
         applyDayBoundaryIfNeeded(persist: true)
         syncFromStats()
         startObservers()
@@ -62,9 +90,9 @@ final class AppState {
         }
 
         if monitor == nil {
-            monitor = KeystrokeMonitor { [weak self] in
+            monitor = KeystrokeMonitor { [weak self] event in
                 Task { @MainActor in
-                    self?.handleKeyDown()
+                    self?.handleEvent(event)
                 }
             }
         }
@@ -78,13 +106,49 @@ final class AppState {
         NSApplication.shared.terminate(nil)
     }
 
-    private func handleKeyDown() {
+    private func handleEvent(_ event: NSEvent) {
+        if event.type == .flagsChanged {
+            activeModifiers = KeyLabelFormatter.activeModifiers(from: event.modifierFlags)
+            return
+        }
+
+        guard event.type == .keyDown else { return }
+
         applyDayBoundaryIfNeeded(persist: true)
         guard hasAccessibilityPermission else { return }
 
+        // Keep modifier chrome in sync with the key that was just pressed.
+        activeModifiers = KeyLabelFormatter.activeModifiers(from: event.modifierFlags)
+
         todayCount += 1
         stats.todayCount = todayCount
+
+        let codeKey = String(event.keyCode)
+        stats.keyCounts[codeKey, default: 0] += 1
+
         schedulePersist()
+
+        if let label = KeyLabelFormatter.keyName(for: event) {
+            // Mask password / secure-field input in the overlay only; counts still use keyCode.
+            appendRecentKey(SecureInputDetector.isActive ? "*" : label)
+        }
+    }
+
+    private func appendRecentKey(_ label: String) {
+        recentKeys.append(RecentKey(label: label))
+        if recentKeys.count > Self.maxRecentKeys {
+            recentKeys.removeFirst(recentKeys.count - Self.maxRecentKeys)
+        }
+        scheduleRecentKeysClear()
+    }
+
+    private func scheduleRecentKeysClear() {
+        recentKeysClearTask?.cancel()
+        recentKeysClearTask = Task { @MainActor in
+            try? await Task.sleep(for: Self.recentKeysIdleClear)
+            guard !Task.isCancelled else { return }
+            recentKeys = []
+        }
     }
 
     private func applyDayBoundaryIfNeeded(persist: Bool) {
