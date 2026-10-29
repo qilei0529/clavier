@@ -32,8 +32,8 @@ struct KeyboardHeatmapView: View {
             arrowCluster
         }
         .frame(height: keyboardHeight)
-        // Room for tooltips sitting 20pt above top-row keys.
-        .padding(.top, 36)
+        // Room for tooltips sitting above top-row keys.
+        .padding(.top, 28)
     }
 
     private var mainKeyboard: some View {
@@ -111,12 +111,12 @@ struct KeyboardHeatmapView: View {
             }
             .overlay(alignment: .top) {
                 if isHovered {
+                    // Zero-height frame anchored at rect top; bubble grows upward.
+                    // offset -4 → bubble bottom is 4pt above the rect top.
                     tooltipBubble(name: name, count: count)
                         .fixedSize()
-                        // Sit 20pt above this rect (bubble bottom → rect top + 20pt).
-                        .alignmentGuide(.top) { dimensions in
-                            dimensions[.bottom] + 20
-                        }
+                        .frame(height: 0, alignment: .bottom)
+                        .offset(y: -4)
                 }
             }
             .zIndex(isHovered ? 1000 : 0)
