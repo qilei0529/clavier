@@ -14,6 +14,8 @@ struct KeycastOverlayView: View {
     private let barHeight: CGFloat = 32
     private let cornerRadius: CGFloat = 14
     private let gap: CGFloat = 1
+    private let letterKeySize: CGFloat = 26
+    private let symbolKeySize: CGFloat = 16
     private let panelFill = Color.black.opacity(0.8)
     private let gapFill = Color.black.opacity(0.4)
     private let inactive = Color(white: 0.55)
@@ -60,10 +62,17 @@ struct KeycastOverlayView: View {
             if appState.recentKeys.isEmpty {
                 Color.clear
             } else {
-                HStack(spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    // Reserve letter-size line metrics so the row height never jumps.
+                    Text("A")
+                        .font(.system(size: letterKeySize, weight: .medium, design: .default))
+                        .hidden()
+                        .frame(width: 0)
+                        .accessibilityHidden(true)
+
                     ForEach(appState.recentKeys) { key in
                         Text(key.label)
-                            .font(.system(size: 22, weight: .semibold, design: .default))
+                            .font(.system(size: keyFontSize(for: key.label), weight: .medium, design: .default))
                             .foregroundStyle(active)
                             .lineLimit(1)
                             .minimumScaleFactor(0.5)
@@ -73,6 +82,14 @@ struct KeycastOverlayView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// Latin letters read larger; symbols / F-keys / punctuation stay compact.
+    private func keyFontSize(for label: String) -> CGFloat {
+        guard label.count == 1, let ch = label.first, ch.isASCII, ch.isLetter else {
+            return symbolKeySize
+        }
+        return letterKeySize
     }
 
     private var modifierBar: some View {
