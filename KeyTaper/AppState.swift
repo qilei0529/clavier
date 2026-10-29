@@ -48,11 +48,53 @@ final class AppState {
         Array(history.prefix(14))
     }
 
-    /// Lifetime per-key tallies for a future heatmap UI. Keys are physical keyCodes.
+    var todayDate: String {
+        stats.todayDate
+    }
+
+    /// Lifetime per-key tallies. Keys are physical keyCodes.
     var keyCounts: [UInt16: Int] {
+        Self.mapKeyCounts(stats.keyCounts)
+    }
+
+    /// Per-key tallies for a calendar day (`yyyy-MM-dd`). Today uses the live map.
+    func keyCounts(on date: String) -> [UInt16: Int] {
+        if date == stats.todayDate {
+            return Self.mapKeyCounts(stats.todayKeyCounts)
+        }
+        guard let day = stats.days.first(where: { $0.date == date }) else {
+            return [:]
+        }
+        return Self.mapKeyCounts(day.keyCounts)
+    }
+
+    /// Top keys for a day, highest count first.
+    func topKeyCounts(on date: String, limit: Int = 8) -> [(code: UInt16, count: Int)] {
+        keyCounts(on: date)
+            .map { (code: $0.key, count: $0.value) }
+            .sorted {
+                if $0.count != $1.count { return $0.count > $1.count }
+                return $0.code < $1.code
+            }
+            .prefix(limit)
+            .map { $0 }
+    }
+
+    /// Per-hour totals for a calendar day (always length 24). Today uses the live array.
+    func hourlyCounts(on date: String) -> [Int] {
+        if date == stats.todayDate {
+            return HourlyCounts.normalized(stats.todayHourlyCounts)
+        }
+        guard let day = stats.days.first(where: { $0.date == date }) else {
+            return HourlyCounts.empty
+        }
+        return HourlyCounts.normalized(day.hourlyCounts)
+    }
+
+    private static func mapKeyCounts(_ raw: [String: Int]) -> [UInt16: Int] {
         var result: [UInt16: Int] = [:]
-        result.reserveCapacity(stats.keyCounts.count)
-        for (key, count) in stats.keyCounts {
+        result.reserveCapacity(raw.count)
+        for (key, count) in raw {
             guard let code = UInt16(key) else { continue }
             result[code] = count
         }
@@ -109,6 +151,10 @@ final class AppState {
     private func handleEvent(_ event: NSEvent) {
         if event.type == .flagsChanged {
             activeModifiers = KeyLabelFormatter.activeModifiers(from: event.modifierFlags)
+            // Modifiers do not emit keyDown; count presses here for the heatmap only.
+            if KeyLabelFormatter.isModifierPressed(in: event) {
+                recordModifierKey(event.keyCode)
+            }
             return
         }
 
@@ -125,6 +171,13 @@ final class AppState {
 
         let codeKey = String(event.keyCode)
         stats.keyCounts[codeKey, default: 0] += 1
+        stats.todayKeyCounts[codeKey, default: 0] += 1
+
+        let hour = Calendar.current.component(.hour, from: Date())
+        if stats.todayHourlyCounts.count != HourlyCounts.hourCount {
+            stats.todayHourlyCounts = HourlyCounts.normalized(stats.todayHourlyCounts)
+        }
+        stats.todayHourlyCounts[hour] += 1
 
         schedulePersist()
 
@@ -132,6 +185,17 @@ final class AppState {
             // Mask password / secure-field input in the overlay only; counts still use keyCode.
             appendRecentKey(SecureInputDetector.isActive ? "*" : label)
         }
+    }
+
+    /// Heatmap / per-day key maps only — does not inflate the menu-bar day total.
+    private func recordModifierKey(_ keyCode: UInt16) {
+        applyDayBoundaryIfNeeded(persist: true)
+        guard hasAccessibilityPermission else { return }
+
+        let codeKey = String(keyCode)
+        stats.keyCounts[codeKey, default: 0] += 1
+        stats.todayKeyCounts[codeKey, default: 0] += 1
+        schedulePersist()
     }
 
     private func appendRecentKey(_ label: String) {
@@ -156,11 +220,18 @@ final class AppState {
         guard stats.todayDate != today else { return }
 
         if stats.todayCount > 0 {
-            upsertHistory(date: stats.todayDate, count: stats.todayCount)
+            upsertHistory(
+                date: stats.todayDate,
+                count: stats.todayCount,
+                keyCounts: stats.todayKeyCounts,
+                hourlyCounts: stats.todayHourlyCounts
+            )
         }
 
         stats.todayDate = today
         stats.todayCount = 0
+        stats.todayKeyCounts = [:]
+        stats.todayHourlyCounts = HourlyCounts.empty
         todayCount = 0
         history = sortedHistory(stats.days)
 
@@ -169,13 +240,28 @@ final class AppState {
         }
     }
 
-    private func upsertHistory(date: String, count: Int) {
+    private func upsertHistory(
+        date: String,
+        count: Int,
+        keyCounts: [String: Int],
+        hourlyCounts: [Int]
+    ) {
         guard !date.isEmpty else { return }
 
+        let normalizedHourly = HourlyCounts.normalized(hourlyCounts)
         if let index = stats.days.firstIndex(where: { $0.date == date }) {
             stats.days[index].count = count
+            stats.days[index].keyCounts = keyCounts
+            stats.days[index].hourlyCounts = normalizedHourly
         } else {
-            stats.days.append(DayCount(date: date, count: count))
+            stats.days.append(
+                DayCount(
+                    date: date,
+                    count: count,
+                    keyCounts: keyCounts,
+                    hourlyCounts: normalizedHourly
+                )
+            )
         }
 
         stats.days = sortedHistory(stats.days)
