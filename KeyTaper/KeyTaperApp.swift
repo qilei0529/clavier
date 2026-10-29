@@ -9,9 +9,19 @@ import SwiftUI
 
 @main
 struct KeyTaperApp: App {
+    @State private var appState = AppState()
+
     var body: some Scene {
-        WindowGroup {
+        MenuBarExtra {
             ContentView()
+                .environment(appState)
+        } label: {
+            Label {
+                Text(appState.menuBarTitle)
+            } icon: {
+                Image(systemName: appState.hasAccessibilityPermission ? "keyboard" : "exclamationmark.triangle")
+            }
         }
+        .menuBarExtraStyle(.window)
     }
 }
