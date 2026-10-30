@@ -343,10 +343,12 @@ final class AppState {
     private func persistNow() {
         persistTask?.cancel()
         persistTask = nil
+        // Roll the local calendar day before writing. Stamping todayDate here
+        // used to skip the archive when a delayed save landed after midnight.
+        applyDayBoundaryIfNeeded(persist: false)
         stats.todayCount = todayCount
         stats.todayLeftClicks = todayLeftClicks
         stats.todayRightClicks = todayRightClicks
-        stats.todayDate = DayKey.string()
         stats.days = sortedHistory(stats.days)
         store.save(stats)
     }
