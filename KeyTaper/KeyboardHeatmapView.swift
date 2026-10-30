@@ -106,7 +106,7 @@ struct KeyboardHeatmapView: View {
             .overlay {
                 if isHovered {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .strokeBorder(Color.primary.opacity(0.35), lineWidth: 1)
+                        .strokeBorder(Color.white.opacity(0.45), lineWidth: 1)
                 }
             }
             .overlay(alignment: .top) {
@@ -133,18 +133,22 @@ struct KeyboardHeatmapView: View {
         HStack(spacing: 6) {
             Text(name)
                 .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundStyle(.white.opacity(0.94))
             Text(formattedCount(count))
                 .font(.system(size: 11, weight: .medium, design: .rounded).monospacedDigit())
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.62))
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(.background.opacity(0.95), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .background(
+            Color(white: 0.12).opacity(0.95),
+            in: RoundedRectangle(cornerRadius: 6, style: .continuous)
+        )
         .overlay(
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+                .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.12), radius: 3, y: 1)
+        .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
         .allowsHitTesting(false)
     }
 
@@ -169,7 +173,7 @@ struct KeyboardHeatmapView: View {
         return heatLevels[level - 1]
     }
 
-    private static let emptyFill = Color(red: 0.92, green: 0.93, blue: 0.94)
+    private static let emptyFill = Color(white: 0.18)
     private static let heatLevels: [Color] = [
         Color(red: 0.61, green: 0.91, blue: 0.64), // #9be9a8
         Color(red: 0.25, green: 0.77, blue: 0.39), // #40c463

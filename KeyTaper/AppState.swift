@@ -177,6 +177,8 @@ final class AppState {
         }
 
         guard event.type == .keyDown else { return }
+        // macOS auto-repeats keyDown while a key is held (e.g. Delete); count the press once.
+        guard !event.isARepeat else { return }
 
         applyDayBoundaryIfNeeded(persist: true)
         guard hasAccessibilityPermission else { return }

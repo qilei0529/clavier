@@ -27,7 +27,7 @@ struct ContentView: View {
     var body: some View {
         @Bindable var appState = appState
 
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 8) {
             header
 
             if !appState.hasAccessibilityPermission {
@@ -40,63 +40,84 @@ struct ContentView: View {
             dayKeySummary
             dayMouseSummary
 
-            Divider()
+            panelDivider
 
             Toggle("Show key overlay", isOn: $appState.isOverlayVisible)
                 .controlSize(.small)
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.86))
+                .padding(.horizontal, 2)
 
             Text("Overlay shows recent keys in memory only. Per-key tallies are stored for today and each past day.")
                 .font(.caption2)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.white.opacity(0.54))
                 .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 2)
 
-            Divider()
+            panelDivider
 
             controls
         }
-        .padding(16)
-        .frame(width: 280)
+        .padding(10)
+        .frame(width: 186)
+        .background(MenuBarWindowBackground())
+        .preferredColorScheme(.dark)
         .onAppear {
             appState.refreshPermissionAndMonitor()
             if selectedDate == nil {
                 selectedDate = appState.todayDate
             }
         }
+        .onChange(of: appState.todayDate) { oldToday, newToday in
+            if selectedDate == nil || selectedDate == oldToday {
+                selectedDate = newToday
+            }
+        }
+    }
+
+    private var panelDivider: some View {
+        Divider()
+            .overlay(Color.white.opacity(0.12))
     }
 
     private var header: some View {
         Button {
             selectedDate = appState.todayDate
         } label: {
-            VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("Today")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
-
+                    .foregroundStyle(.white.opacity(0.62))
+                Spacer(minLength: 8)
                 Text(formattedCount(appState.todayCount))
-                    .font(.system(size: 36, weight: .semibold, design: .rounded))
+                    .font(.system(size: 24, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .contentTransition(.numericText())
                     .animation(.snappy, value: appState.todayCount)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white.opacity(0.94))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(6)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
             .background(
-                selectedDate == appState.todayDate
-                    ? Color.accentColor.opacity(0.12)
-                    : Color.clear,
-                in: RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color(red: 20 / 255, green: 20 / 255, blue: 20 / 255).opacity(0.3))
+                    .overlay {
+                        if selectedDate == appState.todayDate {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.white.opacity(0.08))
+                        }
+                    }
             )
         }
         .buttonStyle(.plain)
     }
 
     private var permissionBanner: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Text("Accessibility access is required to count keystrokes and show the key overlay.")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.72))
                 .fixedSize(horizontal: false, vertical: true)
 
             Button("Open Accessibility Settings") {
@@ -105,21 +126,24 @@ struct ContentView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.small)
         }
-        .padding(10)
+        .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.yellow.opacity(0.15), in: RoundedRectangle(cornerRadius: 8))
+        .background(
+            Color.white.opacity(0.08),
+            in: RoundedRectangle(cornerRadius: 8)
+        )
     }
 
     private var historySection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("Recent days")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.54))
 
             if appState.recentHistory.isEmpty {
                 Text("No history yet")
                     .font(.callout)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.white.opacity(0.56))
             } else {
                 ForEach(appState.recentHistory) { day in
                     Button {
@@ -128,17 +152,17 @@ struct ContentView: View {
                         HStack {
                             Text(displayDate(day.date))
                                 .font(.callout)
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(.white)
                             Spacer()
                             Text(formattedCount(day.count))
                                 .font(.callout.monospacedDigit())
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.white.opacity(0.72))
                         }
                         .padding(.horizontal, 6)
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 3)
                         .background(
                             selectedDate == day.date
-                                ? Color.accentColor.opacity(0.12)
+                                ? Color.white.opacity(0.08)
                                 : Color.clear,
                             in: RoundedRectangle(cornerRadius: 6)
                         )
@@ -154,35 +178,35 @@ struct ContentView: View {
         if let selectedDate {
             let hours = appState.hourlyCounts(on: selectedDate)
             let maxCount = hours.max() ?? 0
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(selectedDate == appState.todayDate ? "Hourly today" : "Hourly")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.54))
 
                 if maxCount == 0 {
                     Text("No hourly data for this day")
                         .font(.callout)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.white.opacity(0.56))
                 } else {
                     HStack(alignment: .bottom, spacing: 2) {
                         ForEach(0..<HourlyCounts.hourCount, id: \.self) { hour in
                             let value = hours[hour]
                             let barHeight = value > 0
-                                ? max(2, CGFloat(value) / CGFloat(maxCount) * 36)
+                                ? max(2, CGFloat(value) / CGFloat(maxCount) * 24)
                                 : 1
                             RoundedRectangle(cornerRadius: 1, style: .continuous)
-                                .fill(value > 0 ? Color.accentColor.opacity(0.85) : Color.secondary.opacity(0.15))
+                                .fill(value > 0 ? Color.white.opacity(0.85) : Color.white.opacity(0.12))
                                 .frame(maxWidth: .infinity)
                                 .frame(height: barHeight)
                         }
                     }
-                    .frame(height: 36, alignment: .bottom)
+                    .frame(height: 24, alignment: .bottom)
 
                     if let peak = hours.enumerated().max(by: { $0.element < $1.element }),
                        peak.element > 0 {
                         Text("Peak \(String(format: "%02d:00", peak.offset)) · \(formattedCount(peak.element))")
                             .font(.caption2)
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(.white.opacity(0.56))
                     }
                 }
             }
@@ -194,23 +218,26 @@ struct ContentView: View {
         if let selectedDate {
             let counts = appState.keyCounts(on: selectedDate)
             let clicks = appState.mouseClicks(on: selectedDate)
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(selectedDate == appState.todayDate ? "Keys today" : "Keys on \(displayDate(selectedDate))")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.54))
 
                 KeyboardHeatmapView(
                     counts: counts,
                     leftClicks: clicks.left,
                     rightClicks: clicks.right
                 )
+                .animation(nil, value: appState.todayCount)
                 .animation(nil, value: appState.todayLeftClicks)
                 .animation(nil, value: appState.todayRightClicks)
 
                 if counts.isEmpty {
-                    Text("No per-key data for this day yet")
+                    Text(selectedDate == appState.todayDate
+                         ? "No per-key data for today yet"
+                         : "No per-key data for this day")
                         .font(.caption2)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.white.opacity(0.56))
                 }
             }
         }
@@ -220,17 +247,17 @@ struct ContentView: View {
     private var dayMouseSummary: some View {
         if let selectedDate {
             let clicks = appState.mouseClicks(on: selectedDate)
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 Text("Mouse")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.54))
                 Spacer()
                 Text("L \(formattedCount(clicks.left))")
                     .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.72))
                 Text("R \(formattedCount(clicks.right))")
                     .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.72))
             }
             // Ensure live today clicks invalidate this view.
             .animation(nil, value: appState.todayLeftClicks)
@@ -244,8 +271,13 @@ struct ContentView: View {
             Button("Quit") {
                 appState.quit()
             }
+            .font(.caption)
+            .foregroundStyle(.white.opacity(0.86))
+            .buttonStyle(.borderless)
             .keyboardShortcut("q")
         }
+        .padding(.horizontal, 2)
+        .padding(.vertical, 2)
         .controlSize(.small)
     }
 
