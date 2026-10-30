@@ -32,8 +32,6 @@ struct KeyboardHeatmapView: View {
             arrowCluster
         }
         .frame(height: keyboardHeight)
-        // Room for tooltips sitting above top-row keys.
-        .padding(.top, 28)
     }
 
     private var mainKeyboard: some View {
@@ -74,33 +72,46 @@ struct KeyboardHeatmapView: View {
 
             HStack(spacing: gap) {
                 Color.clear.frame(width: unitSize, height: unitSize)
-                keyCap(.init(126, "↑", 1))
+                keyCap(.init(126, "↑", 1, tooltipTrailing: true))
                     .frame(width: unitSize, height: unitSize)
                 Color.clear.frame(width: unitSize, height: unitSize)
             }
             HStack(spacing: gap) {
-                keyCap(.init(123, "←", 1))
+                keyCap(.init(123, "←", 1, tooltipTrailing: true))
                     .frame(width: unitSize, height: unitSize)
-                keyCap(.init(125, "↓", 1))
+                keyCap(.init(125, "↓", 1, tooltipTrailing: true))
                     .frame(width: unitSize, height: unitSize)
-                keyCap(.init(124, "→", 1))
+                keyCap(.init(124, "→", 1, tooltipTrailing: true))
                     .frame(width: unitSize, height: unitSize)
             }
         }
     }
 
     private func mouseCap(id: String, name: String, count: Int) -> some View {
-        heatCap(id: id, name: name, count: count)
+        // Arrow cluster sits on the panel's trailing edge.
+        heatCap(id: id, name: name, count: count, tooltipTrailing: true)
             .frame(width: unitSize, height: unitSize)
     }
 
     private func keyCap(_ key: HeatmapKey) -> some View {
         let count = key.keyCode.flatMap { counts[$0] } ?? 0
-        return heatCap(id: key.id, name: displayName(for: key), count: count)
+        return heatCap(
+            id: key.id,
+            name: displayName(for: key),
+            count: count,
+            tooltipTrailing: key.tooltipTrailing
+        )
     }
 
-    private func heatCap(id: String, name: String, count: Int) -> some View {
+    private func heatCap(
+        id: String,
+        name: String,
+        count: Int,
+        tooltipTrailing: Bool = false
+    ) -> some View {
         let isHovered = hoveredKeyID == id
+        // Leading by default; trailing on right-edge keys so the bubble stays in-panel.
+        let tooltipAlignment: Alignment = tooltipTrailing ? .topTrailing : .topLeading
         return RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             .fill(Self.fillColor(count: count, maxCount: maxCount))
             .overlay {
@@ -109,10 +120,10 @@ struct KeyboardHeatmapView: View {
                         .strokeBorder(Color.white.opacity(0.45), lineWidth: 1)
                 }
             }
-            .overlay(alignment: .top) {
+            .overlay(alignment: tooltipAlignment) {
                 if isHovered {
-                    // Zero-height frame anchored at rect top; bubble grows upward.
-                    // offset -4 → bubble bottom is 4pt above the rect top.
+                    // Zero-height frame anchored at key top; bubble grows upward.
+                    // offset -4 → bubble bottom is 4pt above the key top.
                     tooltipBubble(name: name, count: count)
                         .fixedSize()
                         .frame(height: 0, alignment: .bottom)
@@ -184,52 +195,67 @@ struct KeyboardHeatmapView: View {
     // MARK: - ANSI layout (physical keyCodes)
 
     private static let arrowKeys: [HeatmapKey] = [
-        .init(126, "↑", 1),
-        .init(123, "←", 1),
-        .init(125, "↓", 1),
-        .init(124, "→", 1),
+        .init(126, "↑", 1, tooltipTrailing: true),
+        .init(123, "←", 1, tooltipTrailing: true),
+        .init(125, "↓", 1, tooltipTrailing: true),
+        .init(124, "→", 1, tooltipTrailing: true),
     ]
 
     private static var allKeys: [HeatmapKey] {
         rows.flatMap(\.keys) + arrowKeys
     }
 
+    /// Last `count` keys in a row pin tooltips to the trailing edge.
+    private static func withTrailingTooltips(_ keys: [HeatmapKey], count: Int = 4) -> [HeatmapKey] {
+        guard count > 0, !keys.isEmpty else { return keys }
+        let start = max(0, keys.count - count)
+        return keys.enumerated().map { index, key in
+            guard index >= start else { return key }
+            return HeatmapKey(
+                key.keyCode,
+                key.label,
+                key.widthUnits,
+                tooltipTrailing: true
+            )
+        }
+    }
+
     private static let rows: [HeatmapRow] = [
         // Esc + F1–F12 (Mac function row).
-        HeatmapRow(leadingInsetUnits: 0, keys: [
+        HeatmapRow(leadingInsetUnits: 0, keys: withTrailingTooltips([
             .init(53, "esc", 1.25),
             .init(122, "F1", 1), .init(120, "F2", 1), .init(99, "F3", 1), .init(118, "F4", 1),
             .init(96, "F5", 1), .init(97, "F6", 1), .init(98, "F7", 1), .init(100, "F8", 1),
             .init(101, "F9", 1), .init(109, "F10", 1), .init(103, "F11", 1), .init(111, "F12", 1),
-        ]),
-        HeatmapRow(leadingInsetUnits: 0, keys: [
+        ])),
+        HeatmapRow(leadingInsetUnits: 0, keys: withTrailingTooltips([
             .init(50, "`", 1), .init(18, "1", 1), .init(19, "2", 1), .init(20, "3", 1),
             .init(21, "4", 1), .init(23, "5", 1), .init(22, "6", 1), .init(26, "7", 1),
             .init(28, "8", 1), .init(25, "9", 1), .init(29, "0", 1), .init(27, "-", 1),
             .init(24, "=", 1), .init(51, "⌫", 1.6),
-        ]),
-        HeatmapRow(leadingInsetUnits: 0.15, keys: [
+        ])),
+        HeatmapRow(leadingInsetUnits: 0.15, keys: withTrailingTooltips([
             .init(48, "⇥", 1.5), .init(12, "q", 1), .init(13, "w", 1), .init(14, "e", 1),
             .init(15, "r", 1), .init(17, "t", 1), .init(16, "y", 1), .init(32, "u", 1),
             .init(34, "i", 1), .init(31, "o", 1), .init(35, "p", 1), .init(33, "[", 1),
             .init(30, "]", 1), .init(42, "\\", 1.35),
-        ]),
-        HeatmapRow(leadingInsetUnits: 0.35, keys: [
+        ])),
+        HeatmapRow(leadingInsetUnits: 0.35, keys: withTrailingTooltips([
             .init(57, "⇪", 1.75), .init(0, "a", 1), .init(1, "s", 1), .init(2, "d", 1),
             .init(3, "f", 1), .init(5, "g", 1), .init(4, "h", 1), .init(38, "j", 1),
             .init(40, "k", 1), .init(37, "l", 1), .init(41, ";", 1), .init(39, "'", 1),
             .init(36, "⏎", 1.75),
-        ]),
-        HeatmapRow(leadingInsetUnits: 0.55, keys: [
+        ])),
+        HeatmapRow(leadingInsetUnits: 0.55, keys: withTrailingTooltips([
             .init(56, "⇧", 2.25), .init(6, "z", 1), .init(7, "x", 1), .init(8, "c", 1),
             .init(9, "v", 1), .init(11, "b", 1), .init(45, "n", 1), .init(46, "m", 1),
             .init(43, ",", 1), .init(47, ".", 1), .init(44, "/", 1), .init(60, "⇧", 2.25),
-        ]),
-        HeatmapRow(leadingInsetUnits: 0.2, keys: [
+        ])),
+        HeatmapRow(leadingInsetUnits: 0.2, keys: withTrailingTooltips([
             .init(59, "⌃", 1.25), .init(58, "⌥", 1.25), .init(55, "⌘", 1.5),
             .init(49, "⎵", 5.5),
             .init(54, "⌘", 1.5), .init(61, "⌥", 1.25), .init(62, "⌃", 1.25),
-        ]),
+        ], count: 3)),
     ]
 }
 
@@ -240,11 +266,19 @@ private struct HeatmapKey: Identifiable {
     let keyCode: UInt16?
     let label: String
     let widthUnits: CGFloat
+    /// When true, tooltip anchors to the key's trailing edge (right-side keys).
+    let tooltipTrailing: Bool
 
-    init(_ code: UInt16?, _ label: String, _ widthUnits: CGFloat) {
+    init(
+        _ code: UInt16?,
+        _ label: String,
+        _ widthUnits: CGFloat,
+        tooltipTrailing: Bool = false
+    ) {
         keyCode = code
         self.label = label
         self.widthUnits = widthUnits
+        self.tooltipTrailing = tooltipTrailing
         if let code {
             id = "\(code)"
         } else {

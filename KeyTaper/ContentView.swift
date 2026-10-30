@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AppState.self) private var appState
     @State private var selectedDate: String?
+    @State private var hoveredHour: Int?
 
     private static let countFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -190,14 +191,11 @@ struct ContentView: View {
                 } else {
                     HStack(alignment: .bottom, spacing: 2) {
                         ForEach(0..<HourlyCounts.hourCount, id: \.self) { hour in
-                            let value = hours[hour]
-                            let barHeight = value > 0
-                                ? max(2, CGFloat(value) / CGFloat(maxCount) * 24)
-                                : 1
-                            RoundedRectangle(cornerRadius: 1, style: .continuous)
-                                .fill(value > 0 ? Color.white.opacity(0.85) : Color.white.opacity(0.12))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: barHeight)
+                            hourlyBar(
+                                hour: hour,
+                                value: hours[hour],
+                                maxCount: maxCount
+                            )
                         }
                     }
                     .frame(height: 24, alignment: .bottom)
@@ -211,6 +209,72 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    private func hourlyBar(hour: Int, value: Int, maxCount: Int) -> some View {
+        let barHeight = value > 0
+            ? max(2, CGFloat(value) / CGFloat(maxCount) * 24)
+            : 1
+        let isHovered = hoveredHour == hour
+        // Right half of the day pins tooltip to trailing edge.
+        let tooltipAlignment: Alignment = hour >= 12 ? .topTrailing : .topLeading
+
+        return Color.clear
+            .frame(maxWidth: .infinity)
+            .frame(height: 24)
+            .overlay(alignment: .bottom) {
+                RoundedRectangle(cornerRadius: 1, style: .continuous)
+                    .fill(value > 0 ? Color.white.opacity(0.85) : Color.white.opacity(0.12))
+                    .frame(height: barHeight)
+                    .overlay {
+                        if isHovered {
+                            RoundedRectangle(cornerRadius: 1, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.45), lineWidth: 1)
+                        }
+                    }
+            }
+            .overlay(alignment: tooltipAlignment) {
+                if isHovered {
+                    panelTooltip(
+                        name: String(format: "%02d:00", hour),
+                        count: value
+                    )
+                    .fixedSize()
+                    .frame(height: 0, alignment: .bottom)
+                    .offset(y: -4)
+                }
+            }
+            .zIndex(isHovered ? 1000 : 0)
+            .onHover { hovering in
+                if hovering {
+                    hoveredHour = hour
+                } else if hoveredHour == hour {
+                    hoveredHour = nil
+                }
+            }
+    }
+
+    private func panelTooltip(name: String, count: Int) -> some View {
+        HStack(spacing: 6) {
+            Text(name)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundStyle(.white.opacity(0.94))
+            Text(formattedCount(count))
+                .font(.system(size: 11, weight: .medium, design: .rounded).monospacedDigit())
+                .foregroundStyle(.white.opacity(0.62))
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(
+            Color(white: 0.12).opacity(0.95),
+            in: RoundedRectangle(cornerRadius: 6, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+        .allowsHitTesting(false)
     }
 
     @ViewBuilder
