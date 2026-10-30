@@ -195,9 +195,12 @@ struct KeyboardHeatmapView: View {
     }
 
     private static let rows: [HeatmapRow] = [
-        // Esc sits alone on the top-left (Mac layout); keyCode 53.
+        // Esc + F1–F12 (Mac function row).
         HeatmapRow(leadingInsetUnits: 0, keys: [
             .init(53, "esc", 1.25),
+            .init(122, "F1", 1), .init(120, "F2", 1), .init(99, "F3", 1), .init(118, "F4", 1),
+            .init(96, "F5", 1), .init(97, "F6", 1), .init(98, "F7", 1), .init(100, "F8", 1),
+            .init(101, "F9", 1), .init(109, "F10", 1), .init(103, "F11", 1), .init(111, "F12", 1),
         ]),
         HeatmapRow(leadingInsetUnits: 0, keys: [
             .init(50, "`", 1), .init(18, "1", 1), .init(19, "2", 1), .init(20, "3", 1),
