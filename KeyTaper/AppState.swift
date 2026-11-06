@@ -32,8 +32,8 @@ final class AppState {
     private var monitor: KeystrokeMonitor?
     private var persistTask: Task<Void, Never>?
     private var recentKeysClearTask: Task<Void, Never>?
-    nonisolated(unsafe) private var dayChangeObserver: NSObjectProtocol?
-    nonisolated(unsafe) private var becomeActiveObserver: NSObjectProtocol?
+    private var dayChangeObserver: NSObjectProtocol?
+    private var becomeActiveObserver: NSObjectProtocol?
 
     var menuBarTitle: String {
         let formatter = NumberFormatter()
@@ -47,7 +47,21 @@ final class AppState {
     }
 
     var recentHistory: [DayCount] {
-        Array(history.prefix(14))
+        guard let today = DayKey.date(from: stats.todayDate) else {
+            return Array(history.prefix(5))
+        }
+
+        return (0..<5).compactMap { offset in
+            guard let date = Calendar.current.date(byAdding: .day, value: -offset, to: today) else {
+                return nil
+            }
+            let dateKey = DayKey.string(from: date)
+            if dateKey == stats.todayDate {
+                return DayCount(date: dateKey, count: todayCount)
+            }
+            return history.first(where: { $0.date == dateKey })
+                ?? DayCount(date: dateKey, count: 0)
+        }
     }
 
     var todayDate: String {
@@ -114,7 +128,8 @@ final class AppState {
         return result
     }
 
-    init(store: StatsStore = StatsStore()) {
+    init(store suppliedStore: StatsStore? = nil) {
+        let store = suppliedStore ?? StatsStore()
         self.store = store
         self.stats = store.load()
         if UserDefaults.standard.object(forKey: Self.overlayVisibleKey) == nil {
@@ -146,8 +161,9 @@ final class AppState {
 
         if monitor == nil {
             monitor = KeystrokeMonitor { [weak self] event in
+                guard let appState = self else { return }
                 Task { @MainActor in
-                    self?.handleEvent(event)
+                    appState.handleEvent(event)
                 }
             }
         }
@@ -161,11 +177,13 @@ final class AppState {
         NSApplication.shared.terminate(nil)
     }
 
-    private func handleEvent(_ event: NSEvent) {
+    private func handleEvent(_ event: MonitoredEvent) {
+        let modifierFlags = NSEvent.ModifierFlags(rawValue: event.modifierFlagsRawValue)
+
         if event.type == .flagsChanged {
-            activeModifiers = KeyLabelFormatter.activeModifiers(from: event.modifierFlags)
+            activeModifiers = KeyLabelFormatter.activeModifiers(from: modifierFlags)
             // Modifiers do not emit keyDown; count presses here for the heatmap only.
-            if KeyLabelFormatter.isModifierPressed(in: event) {
+            if KeyLabelFormatter.isModifierPressed(keyCode: event.keyCode, flags: modifierFlags) {
                 recordModifierKey(event.keyCode)
             }
             return
@@ -184,7 +202,7 @@ final class AppState {
         guard hasAccessibilityPermission else { return }
 
         // Keep modifier chrome in sync with the key that was just pressed.
-        activeModifiers = KeyLabelFormatter.activeModifiers(from: event.modifierFlags)
+        activeModifiers = KeyLabelFormatter.activeModifiers(from: modifierFlags)
 
         todayCount += 1
         stats.todayCount = todayCount
@@ -201,7 +219,10 @@ final class AppState {
 
         schedulePersist()
 
-        if let label = KeyLabelFormatter.keyName(for: event) {
+        if let label = KeyLabelFormatter.keyName(
+            keyCode: event.keyCode,
+            charactersIgnoringModifiers: event.charactersIgnoringModifiers
+        ) {
             // Mask password / secure-field input in the overlay only; counts still use keyCode.
             appendRecentKey(SecureInputDetector.isActive ? "*" : label)
         }
@@ -378,7 +399,7 @@ final class AppState {
         }
     }
 
-    deinit {
+    isolated deinit {
         if let dayChangeObserver {
             NotificationCenter.default.removeObserver(dayChangeObserver)
         }

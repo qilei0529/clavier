@@ -13,7 +13,7 @@ final class KeycastOverlayController {
 
     private let appState: AppState
     private var panel: NSPanel?
-    nonisolated(unsafe) private var moveObserver: NSObjectProtocol?
+    private var moveObserver: NSObjectProtocol?
 
     init(appState: AppState) {
         self.appState = appState
@@ -69,9 +69,12 @@ final class KeycastOverlayController {
             object: panel,
             queue: .main
         ) { [weak self] notification in
-            guard let window = notification.object as? NSWindow else { return }
+            guard let controller = self,
+                  let window = notification.object as? NSWindow
+            else { return }
+            let origin = window.frame.origin
             Task { @MainActor in
-                self?.persistOrigin(window.frame.origin)
+                controller.persistOrigin(origin)
             }
         }
     }
@@ -80,9 +83,10 @@ final class KeycastOverlayController {
         withObservationTracking {
             _ = appState.isOverlayVisible
         } onChange: { [weak self] in
+            guard let controller = self else { return }
             Task { @MainActor in
-                self?.syncVisibility()
-                self?.observeVisibility()
+                controller.syncVisibility()
+                controller.observeVisibility()
             }
         }
     }
@@ -122,7 +126,7 @@ final class KeycastOverlayController {
         UserDefaults.standard.set(origin.y, forKey: Self.originYKey)
     }
 
-    deinit {
+    isolated deinit {
         if let moveObserver {
             NotificationCenter.default.removeObserver(moveObserver)
         }

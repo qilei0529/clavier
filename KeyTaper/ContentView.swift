@@ -25,6 +25,18 @@ struct ContentView: View {
         return formatter
     }()
 
+    private static let compactDayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M/d"
+        return formatter
+    }()
+
+    private static let yearFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy"
+        return formatter
+    }()
+
     var body: some View {
         @Bindable var appState = appState
 
@@ -82,19 +94,32 @@ struct ContentView: View {
     }
 
     private var header: some View {
-        Button {
+        let displayedDate = selectedDate ?? appState.todayDate
+        let displayedCount = displayedDate == appState.todayDate
+            ? appState.todayCount
+            : appState.history.first(where: { $0.date == displayedDate })?.count ?? 0
+
+        return Button {
             selectedDate = appState.todayDate
         } label: {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("Today")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.62))
+            HStack(alignment: .center, spacing: 8) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(displayedDate == appState.todayDate ? "Today" : compactDisplayDate(displayedDate))
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.9))
+                    Text(displayYear(displayedDate))
+                        .font(.system(size: 10, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.55))
+                }
                 Spacer(minLength: 8)
-                Text(formattedCount(appState.todayCount))
+                Text(formattedCount(displayedCount))
                     .font(.system(size: 24, weight: .semibold, design: .rounded))
                     .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.1)
+                    .allowsTightening(true)
                     .contentTransition(.numericText())
-                    .animation(.snappy, value: appState.todayCount)
+                    .animation(.snappy, value: displayedCount)
                     .foregroundStyle(.white.opacity(0.94))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -136,42 +161,29 @@ struct ContentView: View {
     }
 
     private var historySection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Recent days")
-                .font(.caption)
-                .foregroundStyle(.white.opacity(0.54))
-
-            if appState.recentHistory.isEmpty {
-                Text("No history yet")
-                    .font(.callout)
-                    .foregroundStyle(.white.opacity(0.56))
-            } else {
-                ForEach(appState.recentHistory) { day in
-                    Button {
-                        selectedDate = day.date
-                    } label: {
-                        HStack {
-                            Text(displayDate(day.date))
-                                .font(.callout)
-                                .foregroundStyle(.white)
-                            Spacer()
-                            Text(formattedCount(day.count))
-                                .font(.callout.monospacedDigit())
-                                .foregroundStyle(.white.opacity(0.72))
-                        }
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
+        HStack(spacing: 1) {
+            ForEach(appState.recentHistory) { day in
+                Button {
+                    selectedDate = day.date
+                } label: {
+                    Text(day.date == appState.todayDate ? "Today" : compactDisplayDate(day.date))
+                        .font(.system(size: 11, weight: .medium))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                        .foregroundStyle(.white.opacity(0.68))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 5)
                         .background(
                             selectedDate == day.date
-                                ? Color.white.opacity(0.08)
+                                ? Color.white.opacity(0.1)
                                 : Color.clear,
                             in: RoundedRectangle(cornerRadius: 6)
                         )
-                    }
-                    .buttonStyle(.plain)
                 }
+                .buttonStyle(.plain)
             }
         }
+        .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder
@@ -354,6 +366,20 @@ struct ContentView: View {
             return Self.dayFormatter.string(from: date)
         }
         return key
+    }
+
+    private func compactDisplayDate(_ key: String) -> String {
+        if let date = DayKey.date(from: key) {
+            return Self.compactDayFormatter.string(from: date)
+        }
+        return key
+    }
+
+    private func displayYear(_ key: String) -> String {
+        if let date = DayKey.date(from: key) {
+            return Self.yearFormatter.string(from: date)
+        }
+        return String(key.prefix(4))
     }
 }
 

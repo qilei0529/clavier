@@ -8,8 +8,8 @@ import Foundation
 
 enum KeyLabelFormatter {
     /// Key name only (modifiers are shown separately in the overlay chrome).
-    static func keyName(for event: NSEvent) -> String? {
-        switch Int(event.keyCode) {
+    static func keyName(keyCode: UInt16, charactersIgnoringModifiers: String?) -> String? {
+        switch Int(keyCode) {
         case 36: return "⏎"   // Return
         case 48: return "⇥"   // Tab
         case 49: return "⎵"   // Space
@@ -40,7 +40,7 @@ enum KeyLabelFormatter {
             break
         }
 
-        guard let raw = event.charactersIgnoringModifiers, !raw.isEmpty else {
+        guard let raw = charactersIgnoringModifiers, !raw.isEmpty else {
             return nil
         }
 
@@ -58,9 +58,8 @@ enum KeyLabelFormatter {
     }
 
     /// `flagsChanged` fires on both press and release; true when this modifier key is now down.
-    static func isModifierPressed(in event: NSEvent) -> Bool {
-        let flags = event.modifierFlags
-        switch Int(event.keyCode) {
+    static func isModifierPressed(keyCode: UInt16, flags: NSEvent.ModifierFlags) -> Bool {
+        switch Int(keyCode) {
         case 56, 60: return flags.contains(.shift)      // ⇧
         case 59, 62: return flags.contains(.control)    // ⌃
         case 58, 61: return flags.contains(.option)     // ⌥

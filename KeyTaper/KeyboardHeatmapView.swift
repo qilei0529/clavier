@@ -18,8 +18,14 @@ struct KeyboardHeatmapView: View {
     private let cornerRadius: CGFloat = 1.5
     private let rowCount = 6
 
-    private var maxCount: Int {
-        max(counts.values.max() ?? 0, leftClicks, rightClicks)
+    /// Key caps scale against the busiest key. Clicks are not included, or a
+    /// high click count pins every key in the lightest green.
+    private var maxKeyCount: Int {
+        counts.values.max() ?? 0
+    }
+
+    private var maxClickCount: Int {
+        max(leftClicks, rightClicks)
     }
 
     private var keyboardHeight: CGFloat {
@@ -89,7 +95,13 @@ struct KeyboardHeatmapView: View {
 
     private func mouseCap(id: String, name: String, count: Int) -> some View {
         // Arrow cluster sits on the panel's trailing edge.
-        heatCap(id: id, name: name, count: count, tooltipTrailing: true)
+        heatCap(
+            id: id,
+            name: name,
+            count: count,
+            maxCount: maxClickCount,
+            tooltipTrailing: true
+        )
             .frame(width: unitSize, height: unitSize)
     }
 
@@ -99,6 +111,7 @@ struct KeyboardHeatmapView: View {
             id: key.id,
             name: displayName(for: key),
             count: count,
+            maxCount: maxKeyCount,
             tooltipTrailing: key.tooltipTrailing
         )
     }
@@ -107,6 +120,7 @@ struct KeyboardHeatmapView: View {
         id: String,
         name: String,
         count: Int,
+        maxCount: Int,
         tooltipTrailing: Bool = false
     ) -> some View {
         let isHovered = hoveredKeyID == id
@@ -176,12 +190,13 @@ struct KeyboardHeatmapView: View {
     // MARK: - Colors (GitHub-style greens)
 
     private static func fillColor(count: Int, maxCount: Int) -> Color {
-        if count <= 0 || maxCount <= 0 {
-            return emptyFill
-        }
-        let t = CGFloat(count) / CGFloat(maxCount)
-        let level = min(4, max(1, Int(ceil(t * 4))))
-        return heatLevels[level - 1]
+        guard count > 0, maxCount > 0 else { return emptyFill }
+        let t = min(1, CGFloat(count) / CGFloat(maxCount))
+        // sqrt keeps mid-use keys from collapsing next to the busiest key.
+        let scaled = sqrt(t) * CGFloat(heatLevels.count - 1)
+        let lower = min(heatLevels.count - 2, Int(scaled))
+        let fraction = scaled - CGFloat(lower)
+        return heatLevels[lower].mix(with: heatLevels[lower + 1], by: fraction)
     }
 
     private static let emptyFill = Color(white: 0.18)

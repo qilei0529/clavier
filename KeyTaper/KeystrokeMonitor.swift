@@ -6,12 +6,42 @@
 import AppKit
 import Foundation
 
+enum MonitoredEventType: Sendable {
+    case keyDown
+    case flagsChanged
+    case leftMouseDown
+    case rightMouseDown
+    case other
+}
+
+struct MonitoredEvent: Sendable {
+    let type: MonitoredEventType
+    let keyCode: UInt16
+    let modifierFlagsRawValue: UInt
+    let charactersIgnoringModifiers: String?
+    let isARepeat: Bool
+
+    init(_ event: NSEvent) {
+        switch event.type {
+        case .keyDown: type = .keyDown
+        case .flagsChanged: type = .flagsChanged
+        case .leftMouseDown: type = .leftMouseDown
+        case .rightMouseDown: type = .rightMouseDown
+        default: type = .other
+        }
+        keyCode = event.keyCode
+        modifierFlagsRawValue = event.modifierFlags.rawValue
+        charactersIgnoringModifiers = event.charactersIgnoringModifiers
+        isARepeat = event.isARepeat
+    }
+}
+
 /// Observes global key and mouse-down events. Callers decide how to count / display.
 final class KeystrokeMonitor: @unchecked Sendable {
     private var monitor: Any?
-    private let onEvent: @Sendable (NSEvent) -> Void
+    private let onEvent: @Sendable (MonitoredEvent) -> Void
 
-    init(onEvent: @escaping @Sendable (NSEvent) -> Void) {
+    init(onEvent: @escaping @Sendable (MonitoredEvent) -> Void) {
         self.onEvent = onEvent
     }
 
@@ -27,7 +57,7 @@ final class KeystrokeMonitor: @unchecked Sendable {
         monitor = NSEvent.addGlobalMonitorForEvents(
             matching: [.keyDown, .flagsChanged, .leftMouseDown, .rightMouseDown]
         ) { [onEvent] event in
-            onEvent(event)
+            onEvent(MonitoredEvent(event))
         }
 
         return monitor != nil
