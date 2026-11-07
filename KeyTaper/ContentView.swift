@@ -119,11 +119,11 @@ struct ContentView: View {
                 }
                 .buttonStyle(.plain)
 
-                HStack(spacing: 4) {
+                HStack(alignment: .center, spacing: 4) {
                     Button(action: selectToday) {
                         Text(displayYear(displayedDate))
-                            .font(.system(size: 10, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.55))
+                            .font(.system(size: 12, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.6))
                     }
                     .buttonStyle(.plain)
 
@@ -133,12 +133,13 @@ struct ContentView: View {
                         Image(systemName: "calendar")
                             .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(.white.opacity(showCalendar ? 0.9 : 0.55))
-                            .frame(width: 14, height: 14)
+                            .frame(width: 12, height: 12)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .help("Choose a day")
                 }
+                .frame(height: 18)
             }
 
             Spacer(minLength: 8)
