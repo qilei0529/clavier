@@ -46,24 +46,6 @@ final class AppState {
         return countText
     }
 
-    var recentHistory: [DayCount] {
-        guard let today = DayKey.date(from: stats.todayDate) else {
-            return Array(history.prefix(5))
-        }
-
-        return (0..<5).compactMap { offset in
-            guard let date = Calendar.current.date(byAdding: .day, value: -offset, to: today) else {
-                return nil
-            }
-            let dateKey = DayKey.string(from: date)
-            if dateKey == stats.todayDate {
-                return DayCount(date: dateKey, count: todayCount)
-            }
-            return history.first(where: { $0.date == dateKey })
-                ?? DayCount(date: dateKey, count: 0)
-        }
-    }
-
     var todayDate: String {
         stats.todayDate
     }

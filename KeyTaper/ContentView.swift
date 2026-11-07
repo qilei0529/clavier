@@ -11,6 +11,9 @@ struct ContentView: View {
     @Environment(AppState.self) private var appState
     @State private var selectedDate: String?
     @State private var hoveredHour: Int?
+    @State private var showCalendar = false
+    @State private var calendarMonth = Date()
+    @State private var hoveredDay: String?
 
     private static let countFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -37,6 +40,14 @@ struct ContentView: View {
         return formatter
     }()
 
+    private static let monthTitleFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM yyyy"
+        return formatter
+    }()
+
+    private static let calendarDaySize: CGFloat = 17
+
     var body: some View {
         @Bindable var appState = appState
 
@@ -47,7 +58,9 @@ struct ContentView: View {
                 permissionBanner
             }
 
-            historySection
+            if showCalendar {
+                calendarSection
+            }
 
             dayHourlySummary
             dayKeySummary
@@ -95,23 +108,42 @@ struct ContentView: View {
 
     private var header: some View {
         let displayedDate = selectedDate ?? appState.todayDate
-        let displayedCount = displayedDate == appState.todayDate
-            ? appState.todayCount
-            : appState.history.first(where: { $0.date == displayedDate })?.count ?? 0
+        let displayedCount = count(for: displayedDate)
 
-        return Button {
-            selectedDate = appState.todayDate
-        } label: {
-            HStack(alignment: .center, spacing: 8) {
-                VStack(alignment: .leading, spacing: 1) {
+        return HStack(alignment: .center, spacing: 8) {
+            VStack(alignment: .leading, spacing: 1) {
+                Button(action: selectToday) {
                     Text(displayedDate == appState.todayDate ? "Today" : compactDisplayDate(displayedDate))
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundStyle(.white.opacity(0.9))
-                    Text(displayYear(displayedDate))
-                        .font(.system(size: 10, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.55))
                 }
-                Spacer(minLength: 8)
+                .buttonStyle(.plain)
+
+                HStack(spacing: 4) {
+                    Button(action: selectToday) {
+                        Text(displayYear(displayedDate))
+                            .font(.system(size: 10, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.55))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        toggleCalendar()
+                    } label: {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(.white.opacity(showCalendar ? 0.9 : 0.55))
+                            .frame(width: 14, height: 14)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Choose a day")
+                }
+            }
+
+            Spacer(minLength: 8)
+
+            Button(action: selectToday) {
                 Text(formattedCount(displayedCount))
                     .font(.system(size: 24, weight: .semibold, design: .rounded))
                     .monospacedDigit()
@@ -122,21 +154,21 @@ struct ContentView: View {
                     .animation(.snappy, value: displayedCount)
                     .foregroundStyle(.white.opacity(0.94))
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color(red: 20 / 255, green: 20 / 255, blue: 20 / 255).opacity(0.3))
-                    .overlay {
-                        if selectedDate == appState.todayDate {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.white.opacity(0.08))
-                        }
-                    }
-            )
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(red: 20 / 255, green: 20 / 255, blue: 20 / 255).opacity(0.3))
+                .overlay {
+                    if selectedDate == appState.todayDate {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.white.opacity(0.08))
+                    }
+                }
+        )
     }
 
     private var permissionBanner: some View {
@@ -160,30 +192,140 @@ struct ContentView: View {
         )
     }
 
-    private var historySection: some View {
-        HStack(spacing: 1) {
-            ForEach(appState.recentHistory) { day in
+    private var calendarSection: some View {
+        let calendar = Calendar.current
+        let days = monthDays(for: calendarMonth)
+        let weekdaySymbols = calendar.veryShortWeekdaySymbols
+        let firstWeekday = calendar.firstWeekday
+        let orderedWeekdays = (0..<7).map { weekdaySymbols[($0 + firstWeekday - 1) % 7] }
+
+        return VStack(spacing: 6) {
+            HStack(spacing: 4) {
                 Button {
-                    selectedDate = day.date
+                    shiftMonth(by: -1)
                 } label: {
-                    Text(day.date == appState.todayDate ? "Today" : compactDisplayDate(day.date))
-                        .font(.system(size: 11, weight: .medium))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.85)
-                        .foregroundStyle(.white.opacity(0.68))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 5)
-                        .background(
-                            selectedDate == day.date
-                                ? Color.white.opacity(0.1)
-                                : Color.clear,
-                            in: RoundedRectangle(cornerRadius: 6)
-                        )
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.7))
+                        .frame(width: 18, height: 18)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+
+                Text(Self.monthTitleFormatter.string(from: calendarMonth))
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.82))
+                    .frame(maxWidth: .infinity)
+
+                Button {
+                    shiftMonth(by: 1)
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.white.opacity(canGoToNextMonth ? 0.7 : 0.25))
+                        .frame(width: 18, height: 18)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(!canGoToNextMonth)
+            }
+
+            HStack(spacing: 0) {
+                ForEach(Array(orderedWeekdays.enumerated()), id: \.offset) { _, symbol in
+                    Text(symbol)
+                        .font(.system(size: 9, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.4))
+                        .frame(maxWidth: .infinity)
+                }
+            }
+
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7),
+                spacing: 1
+            ) {
+                ForEach(Array(days.enumerated()), id: \.offset) { index, day in
+                    if let day {
+                        calendarDayCell(day, column: index % 7)
+                    } else {
+                        Color.clear
+                            .frame(height: Self.calendarDaySize)
+                    }
+                }
             }
         }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 4)
         .frame(maxWidth: .infinity)
+        .background(
+            Color.white.opacity(0.06),
+            in: RoundedRectangle(cornerRadius: 8)
+        )
+    }
+
+    private func calendarDayCell(_ date: Date, column: Int) -> some View {
+        let dayKey = DayKey.string(from: date)
+        let dayNumber = Calendar.current.component(.day, from: date)
+        let isFuture = dayKey > appState.todayDate
+        let isSelected = selectedDate == dayKey
+        let isToday = dayKey == appState.todayDate
+        let isHovered = hoveredDay == dayKey
+        let dayCount = count(for: dayKey)
+        let tooltipAlignment: Alignment = column >= 4 ? .topTrailing : .topLeading
+
+        return Button {
+            guard !isFuture else { return }
+            selectedDate = dayKey
+        } label: {
+            Text("\(dayNumber)")
+                .font(.system(size: 9, weight: isToday || isSelected ? .semibold : .medium, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(
+                    isFuture
+                        ? Color.white.opacity(0.22)
+                        : Color.white.opacity(isSelected || isToday ? 0.95 : 0.72)
+                )
+                .frame(width: Self.calendarDaySize, height: Self.calendarDaySize)
+                .background(
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(
+                            isSelected
+                                ? Color.white.opacity(0.14)
+                                : isHovered && !isFuture
+                                    ? Color.white.opacity(0.08)
+                                    : Color.clear
+                        )
+                )
+                .overlay {
+                    if isToday && !isSelected {
+                        RoundedRectangle(cornerRadius: 4)
+                            .strokeBorder(Color.white.opacity(0.28), lineWidth: 1)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: Self.calendarDaySize)
+        }
+        .buttonStyle(.plain)
+        .disabled(isFuture)
+        .overlay(alignment: tooltipAlignment) {
+            if isHovered && !isFuture {
+                panelTooltip(
+                    name: compactDisplayDate(dayKey),
+                    count: dayCount
+                )
+                .fixedSize()
+                .frame(height: 0, alignment: .bottom)
+                .offset(y: -4)
+            }
+        }
+        .zIndex(isHovered ? 1000 : 0)
+        .onHover { hovering in
+            guard !isFuture else { return }
+            if hovering {
+                hoveredDay = dayKey
+            } else if hoveredDay == dayKey {
+                hoveredDay = nil
+            }
+        }
     }
 
     @ViewBuilder
@@ -355,6 +497,104 @@ struct ContentView: View {
         .padding(.horizontal, 2)
         .padding(.vertical, 2)
         .controlSize(.small)
+    }
+
+    private var canGoToNextMonth: Bool {
+        let calendar = Calendar.current
+        guard let today = DayKey.date(from: appState.todayDate) else { return false }
+        let visible = calendar.dateComponents([.year, .month], from: calendarMonth)
+        let todayComponents = calendar.dateComponents([.year, .month], from: today)
+        guard let visibleYear = visible.year,
+              let visibleMonth = visible.month,
+              let todayYear = todayComponents.year,
+              let todayMonth = todayComponents.month else {
+            return false
+        }
+        return (visibleYear, visibleMonth) < (todayYear, todayMonth)
+    }
+
+    private func selectToday() {
+        selectedDate = appState.todayDate
+        showCalendar = false
+        hoveredDay = nil
+    }
+
+    private func toggleCalendar() {
+        if showCalendar {
+            showCalendar = false
+            hoveredDay = nil
+            return
+        }
+        syncCalendarMonth(to: selectedDate ?? appState.todayDate)
+        showCalendar = true
+    }
+
+    private func syncCalendarMonth(to dayKey: String) {
+        if let date = DayKey.date(from: dayKey) {
+            calendarMonth = startOfMonth(for: date)
+        } else if let today = DayKey.date(from: appState.todayDate) {
+            calendarMonth = startOfMonth(for: today)
+        } else {
+            calendarMonth = startOfMonth(for: Date())
+        }
+    }
+
+    private func shiftMonth(by value: Int) {
+        let calendar = Calendar.current
+        guard let next = calendar.date(byAdding: .month, value: value, to: startOfMonth(for: calendarMonth)) else {
+            return
+        }
+        if value > 0 {
+            guard let today = DayKey.date(from: appState.todayDate) else { return }
+            let nextComponents = calendar.dateComponents([.year, .month], from: next)
+            let todayComponents = calendar.dateComponents([.year, .month], from: today)
+            guard let nextYear = nextComponents.year,
+                  let nextMonth = nextComponents.month,
+                  let todayYear = todayComponents.year,
+                  let todayMonth = todayComponents.month,
+                  (nextYear, nextMonth) <= (todayYear, todayMonth) else {
+                return
+            }
+        }
+        calendarMonth = next
+        hoveredDay = nil
+    }
+
+    private func startOfMonth(for date: Date) -> Date {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month], from: date)
+        return calendar.date(from: components) ?? date
+    }
+
+    /// Month grid cells for a full set of weeks. `nil` marks empty leading/trailing slots.
+    private func monthDays(for month: Date) -> [Date?] {
+        let calendar = Calendar.current
+        let start = startOfMonth(for: month)
+        guard let dayRange = calendar.range(of: .day, in: .month, for: start) else {
+            return Array(repeating: nil, count: 42)
+        }
+
+        let weekdayOfStart = calendar.component(.weekday, from: start)
+        let leading = (weekdayOfStart - calendar.firstWeekday + 7) % 7
+        var days: [Date?] = Array(repeating: nil, count: leading)
+
+        for day in dayRange {
+            if let date = calendar.date(byAdding: .day, value: day - 1, to: start) {
+                days.append(date)
+            }
+        }
+
+        while days.count % 7 != 0 {
+            days.append(nil)
+        }
+        return days
+    }
+
+    private func count(for dayKey: String) -> Int {
+        if dayKey == appState.todayDate {
+            return appState.todayCount
+        }
+        return appState.history.first(where: { $0.date == dayKey })?.count ?? 0
     }
 
     private func formattedCount(_ value: Int) -> String {
